@@ -162,31 +162,7 @@
 
     document.getElementById('addUserForm').addEventListener('submit', function(e) {
       e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      if (!validateEmail(email)) {
-        showMessage('Please enter a valid email.', true);
-        return;
-      }
-      showMessage('');
-      fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          showMessage(data.error, true);
-        } else {
-          loadUsers();
-          document.getElementById('addUserForm').reset();
-          showMessage('User added successfully!');
-        }
-      })
-      .catch(() => {
-        showMessage('Failed to add user.', true);
-      });
+      showMessage('This feature is unavailable on the static site. Backend API is required.', true);
     });
 
     document.querySelector('#userTable').addEventListener('click', function(e) {
