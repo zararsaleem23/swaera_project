@@ -119,12 +119,29 @@
     </table>
   </div>
   <script>
-        // In-memory users array for static site
-        window._users = [
-          { id: 1, name: 'Alice Example', email: 'alice@example.com' },
-          { id: 2, name: 'Bob Demo', email: 'bob@demo.com' },
-          { id: 3, name: 'Charlie Test', email: 'charlie@test.com' }
-        ];
+        // Persistent users array using localStorage
+        function getDefaultUsers() {
+          return [
+            { id: 1, name: 'Alice Example', email: 'alice@example.com' },
+            { id: 2, name: 'Bob Demo', email: 'bob@demo.com' },
+            { id: 3, name: 'Charlie Test', email: 'charlie@test.com' }
+          ];
+        }
+
+        function loadUsersFromStorage() {
+          const data = localStorage.getItem('users');
+          try {
+            return data ? JSON.parse(data) : getDefaultUsers();
+          } catch {
+            return getDefaultUsers();
+          }
+        }
+
+        function saveUsersToStorage(users) {
+          localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        window._users = loadUsersFromStorage();
     function showMessage(msg, isError = false) {
       const el = document.getElementById('errorMsg');
       el.textContent = msg;
@@ -148,52 +165,46 @@
     }
 
     function loadUsers() {
-      // Static example users for GitHub Pages
-      const users = [
-        { id: 1, name: 'Alice Example', email: 'alice@example.com' },
-        { id: 2, name: 'Bob Demo', email: 'bob@demo.com' },
-        { id: 3, name: 'Charlie Test', email: 'charlie@test.com' }
-      ];
-        const tbody = document.querySelector('#userTable tbody');
-        tbody.innerHTML = '';
-        window._users.forEach(user => {
-          const row = document.createElement('tr');
-          row.innerHTML = `<td>${user.id}</td><td>${user.name}</td><td>${user.email}</td><td><button class="delBtn" data-id="${user.id}">Delete</button></td>`;
-          tbody.appendChild(row);
-          animateRow(row, 'add');
-        });
+      const tbody = document.querySelector('#userTable tbody');
+      tbody.innerHTML = '';
+      window._users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${user.id}</td><td>${user.name}</td><td>${user.email}</td><td><button class="delBtn" data-id="${user.id}">Delete</button></td>`;
+        tbody.appendChild(row);
+        animateRow(row, 'add');
+      });
     }
     loadUsers();
 
     document.getElementById('addUserForm').addEventListener('submit', function(e) {
       e.preventDefault();
-        const name = document.getElementById('name').value.trim();
-        const email = document.getElementById('email').value.trim();
-        if (!validateEmail(email)) {
-          showMessage('Please enter a valid email.', true);
-          return;
-        }
-        // Add user to in-memory array
-        const newId = window._users.length ? Math.max(...window._users.map(u => u.id)) + 1 : 1;
-        window._users.push({ id: newId, name, email });
-        loadUsers();
-        document.getElementById('addUserForm').reset();
-        showMessage('User added successfully!');
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      if (!validateEmail(email)) {
+        showMessage('Please enter a valid email.', true);
+        return;
+      }
+      // Add user to in-memory array and localStorage
+      const newId = window._users.length ? Math.max(...window._users.map(u => u.id)) + 1 : 1;
+      window._users.push({ id: newId, name, email });
+      saveUsersToStorage(window._users);
+      loadUsers();
+      document.getElementById('addUserForm').reset();
+      showMessage('User added successfully!');
     });
 
     document.querySelector('#userTable').addEventListener('click', function(e) {
       if (e.target.classList.contains('delBtn')) {
-        const id = e.target.getAttribute('data-id');
+        const id = Number(e.target.getAttribute('data-id'));
         const row = e.target.closest('tr');
-          const id = Number(e.target.getAttribute('data-id'));
-          const row = e.target.closest('tr');
-          // Remove user from in-memory array
-          window._users = window._users.filter(u => u.id !== id);
-          animateRow(row, 'delete');
-          setTimeout(() => {
-            loadUsers();
-            showMessage('User deleted successfully!');
-          }, 500);
+        // Remove user from in-memory array and localStorage
+        window._users = window._users.filter(u => u.id !== id);
+        saveUsersToStorage(window._users);
+        animateRow(row, 'delete');
+        setTimeout(() => {
+          loadUsers();
+          showMessage('User deleted successfully!');
+        }, 500);
       }
     });
   </script>
