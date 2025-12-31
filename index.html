@@ -142,21 +142,20 @@
     }
 
     function loadUsers() {
-      fetch('/api/users')
-        .then(res => res.json())
-        .then(users => {
-          const tbody = document.querySelector('#userTable tbody');
-          tbody.innerHTML = '';
-          users.forEach(user => {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${user.id}</td><td>${user.name}</td><td>${user.email}</td><td><button class="delBtn" data-id="${user.id}">Delete</button></td>`;
-            tbody.appendChild(row);
-            animateRow(row, 'add');
-          });
-        })
-        .catch(() => {
-          showMessage('Failed to load users.', true);
-        });
+      // Static example users for GitHub Pages
+      const users = [
+        { id: 1, name: 'Alice Example', email: 'alice@example.com' },
+        { id: 2, name: 'Bob Demo', email: 'bob@demo.com' },
+        { id: 3, name: 'Charlie Test', email: 'charlie@test.com' }
+      ];
+      const tbody = document.querySelector('#userTable tbody');
+      tbody.innerHTML = '';
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${user.id}</td><td>${user.name}</td><td>${user.email}</td><td><button class="delBtn" data-id="${user.id}">Delete</button></td>`;
+        tbody.appendChild(row);
+        animateRow(row, 'add');
+      });
     }
     loadUsers();
 
