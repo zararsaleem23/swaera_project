@@ -119,6 +119,12 @@
     </table>
   </div>
   <script>
+        // In-memory users array for static site
+        window._users = [
+          { id: 1, name: 'Alice Example', email: 'alice@example.com' },
+          { id: 2, name: 'Bob Demo', email: 'bob@demo.com' },
+          { id: 3, name: 'Charlie Test', email: 'charlie@test.com' }
+        ];
     function showMessage(msg, isError = false) {
       const el = document.getElementById('errorMsg');
       el.textContent = msg;
@@ -148,39 +154,46 @@
         { id: 2, name: 'Bob Demo', email: 'bob@demo.com' },
         { id: 3, name: 'Charlie Test', email: 'charlie@test.com' }
       ];
-      const tbody = document.querySelector('#userTable tbody');
-      tbody.innerHTML = '';
-      users.forEach(user => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${user.id}</td><td>${user.name}</td><td>${user.email}</td><td><button class="delBtn" data-id="${user.id}">Delete</button></td>`;
-        tbody.appendChild(row);
-        animateRow(row, 'add');
-      });
+        const tbody = document.querySelector('#userTable tbody');
+        tbody.innerHTML = '';
+        window._users.forEach(user => {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${user.id}</td><td>${user.name}</td><td>${user.email}</td><td><button class="delBtn" data-id="${user.id}">Delete</button></td>`;
+          tbody.appendChild(row);
+          animateRow(row, 'add');
+        });
     }
     loadUsers();
 
     document.getElementById('addUserForm').addEventListener('submit', function(e) {
       e.preventDefault();
-      showMessage('This feature is unavailable on the static site. Backend API is required.', true);
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        if (!validateEmail(email)) {
+          showMessage('Please enter a valid email.', true);
+          return;
+        }
+        // Add user to in-memory array
+        const newId = window._users.length ? Math.max(...window._users.map(u => u.id)) + 1 : 1;
+        window._users.push({ id: newId, name, email });
+        loadUsers();
+        document.getElementById('addUserForm').reset();
+        showMessage('User added successfully!');
     });
 
     document.querySelector('#userTable').addEventListener('click', function(e) {
       if (e.target.classList.contains('delBtn')) {
         const id = e.target.getAttribute('data-id');
         const row = e.target.closest('tr');
-        fetch(`/api/users/${id}`, { method: 'DELETE' })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              animateRow(row, 'delete');
-              showMessage('User deleted successfully!');
-            } else {
-              showMessage(data.error || 'Failed to delete user.', true);
-            }
-          })
-          .catch(() => {
-            showMessage('Failed to delete user.', true);
-          });
+          const id = Number(e.target.getAttribute('data-id'));
+          const row = e.target.closest('tr');
+          // Remove user from in-memory array
+          window._users = window._users.filter(u => u.id !== id);
+          animateRow(row, 'delete');
+          setTimeout(() => {
+            loadUsers();
+            showMessage('User deleted successfully!');
+          }, 500);
       }
     });
   </script>
